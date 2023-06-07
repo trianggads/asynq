@@ -54,9 +54,9 @@ func newHealthChecker(params healthcheckerParams) *healthchecker {
 }
 
 func (hc *healthchecker) shutdown() {
-	if hc.healthcheckFunc == nil {
-		return
-	}
+	//if hc.healthcheckFunc == nil {
+	//	return
+	//}
 
 	hc.logger.Debug("Healthchecker shutting down...")
 	// Signal the healthchecker goroutine to stop.
