@@ -13,12 +13,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq/internal/base"
 	"github.com/hibiken/asynq/internal/timeutil"
-	"github.com/redis/go-redis/v9"
 )
 
 // EquateInt64Approx returns a Comparer option that treats int64 values
@@ -377,7 +377,7 @@ func seedRedisZSet(tb testing.TB, c redis.UniversalClient, key string,
 	for _, item := range items {
 		msg := item.Message
 		encoded := MustMarshal(tb, msg)
-		z := redis.Z{Member: msg.ID, Score: float64(item.Score)}
+		z := &redis.Z{Member: msg.ID, Score: float64(item.Score)}
 		if err := c.ZAdd(context.Background(), key, z).Err(); err != nil {
 			tb.Fatal(err)
 		}
@@ -574,7 +574,7 @@ func SeedRedisZSets(tb testing.TB, r redis.UniversalClient, zsets map[string][]r
 	for key, zs := range zsets {
 		// FIXME: How come we can't simply do ZAdd(ctx, key, zs...) here?
 		for _, z := range zs {
-			if err := r.ZAdd(context.Background(), key, z).Err(); err != nil {
+			if err := r.ZAdd(context.Background(), key, &z).Err(); err != nil {
 				tb.Fatalf("Failed to seed zset (key=%q): %v", key, err)
 			}
 		}
