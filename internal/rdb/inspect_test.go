@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
@@ -19,7 +20,6 @@ import (
 	"github.com/hibiken/asynq/internal/errors"
 	h "github.com/hibiken/asynq/internal/testutil"
 	"github.com/hibiken/asynq/internal/timeutil"
-	"github.com/redis/go-redis/v9"
 )
 
 func TestAllQueues(t *testing.T) {

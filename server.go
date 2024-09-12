@@ -6,6 +6,7 @@ package asynq
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"math"
@@ -15,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	"github.com/go-redis/redis/v8"
 	"github.com/hibiken/asynq/internal/base"
 	"github.com/hibiken/asynq/internal/log"
 	"github.com/hibiken/asynq/internal/rdb"
@@ -182,6 +183,9 @@ type Config struct {
 
 	// HealthCheckFunc is called periodically with any errors encountered during ping to the
 	// connected redis server.
+	// PS: On Kreditmu Worker, the healthcheck process only pings the sql database
+	// including (Confins, Kreditmu, and Core).
+	// pinging of redis will be done on the asynqmon package.
 	HealthCheckFunc func(error)
 
 	// HealthCheckInterval specifies the interval between healthchecks.
@@ -220,6 +224,9 @@ type Config struct {
 	//
 	// If unset or nil, the group aggregation feature will be disabled on the server.
 	GroupAggregator GroupAggregator
+
+	// SqlDB list of SQL connection used to health check database connection
+	SqlDB map[string]*sql.DB
 }
 
 // GroupAggregator aggregates a group of tasks into one before the tasks are passed to the Handler.
@@ -516,6 +523,7 @@ func NewServer(r RedisConnOpt, cfg Config) *Server {
 	healthchecker := newHealthChecker(healthcheckerParams{
 		logger:          logger,
 		broker:          rdb,
+		sqlDbs:          cfg.SqlDB,
 		interval:        healthcheckInterval,
 		healthcheckFunc: cfg.HealthCheckFunc,
 	})
